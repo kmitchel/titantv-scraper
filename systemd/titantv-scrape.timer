@@ -1,0 +1,12 @@
+[Unit]
+Description=Run TitanTV Scraper every 24 hours
+
+[Timer]
+# Run 5 minutes after boot
+OnBootSec=5min
+# Run every 24 hours after the last run
+OnUnitActiveSec=24h
+Unit=titantv-scrape.service
+
+[Install]
+WantedBy=timers.target

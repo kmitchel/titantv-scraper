@@ -1,0 +1,14 @@
+[Unit]
+Description=TitanTV Scraper Service
+After=network.target
+
+[Service]
+Type=oneshot
+# Replace 'your-user' with the actual user triggered the script
+User=root
+# Replace with the actual path to your installation directory
+WorkingDirectory=/opt/titantv-scraper
+# We use 'npm start' to run the scraper. Ensure npm is in the PATH or use /usr/bin/npm
+ExecStart=/usr/bin/npm start
+StandardOutput=journal
+StandardError=journal
