@@ -47,3 +47,24 @@ The script generates a file named `xmltv.xml` in the root directory.
 ## Configuration
 - Data is stored in `data/titantv.db` (SQLite).
 - You can manually set `ZIP_CODE` and `MARKET_NAME` in a `.env` file if desired, though the CLI argument is preferred for the zip code.
+
+## Automation / Systemd Service
+
+To run the scraper automatically every 24 hours:
+
+1. **Edit the Service File**:
+   Open `systemd/titantv-scrape.service` and modify the `User` and `WorkingDirectory` to match your environment.
+
+2. **Copy Files to Systemd**:
+   ```bash
+   sudo cp systemd/titantv-scrape.service /etc/systemd/system/
+   sudo cp systemd/titantv-scrape.timer /etc/systemd/system/
+   ```
+
+3. **Enable and Start the Timer**:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now titantv-scrape.timer
+   ```
+   
+   The timer is configured to run 5 minutes after boot, and then every 24 hours thereafter.
