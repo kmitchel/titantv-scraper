@@ -20,7 +20,7 @@ let capturedScheduleBaseInfo = null;
 async function startScrape(fullDay = false, zipCode = null) {
     console.log(`Starting scrape (API Mode). Mode: Continuous 24h Blocks, Zip: ${zipCode || 'Default'}`);
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         defaultViewport: { width: 1400, height: 900 }
     });
     const page = await browser.newPage();
