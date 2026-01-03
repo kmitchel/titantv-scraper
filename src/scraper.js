@@ -101,10 +101,10 @@ async function startScrape(fullDay = false, zipCode = null) {
                 const market = process.env.MARKET_NAME || 'Fort Wayne';
                 const marketBtn = await page.$(`::-p-xpath(//div[contains(text(), "${market}")])`);
                 if (marketBtn) {
-                    await marketBtn.click();
                     // Reset captured info because the new lineup will trigger new requests
                     capturedChannelData = null;
                     capturedScheduleBaseInfo = null;
+                    console.log("Clearing previous captured data before selecting market.");
 
                     await marketBtn.click();
                     await new Promise(r => setTimeout(r, 5000));
