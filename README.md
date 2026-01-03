@@ -61,7 +61,13 @@ To run the scraper automatically every 24 hours:
    sudo cp systemd/titantv-scrape.timer /etc/systemd/system/
    ```
 
-3. **Enable and Start the Timer**:
+3. **Set Permissions**:
+   Ensure the service user (e.g., `jellyfin`) has ownership of the installation directory so it can write to the database and generate the XML file.
+   ```bash
+   sudo chown -R jellyfin:jellyfin /opt/titantv-scraper
+   ```
+
+4. **Enable and Start the Timer**:
    ```bash
    sudo systemctl daemon-reload
    sudo systemctl enable --now titantv-scrape.timer
