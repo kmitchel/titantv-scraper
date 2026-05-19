@@ -1,3 +1,4 @@
+require('dotenv').config();
 const puppeteer = require('puppeteer');
 const { saveChannel, saveProgram, getProgram, getMetadata, setMetadata } = require('./db');
 const dayjs = require('dayjs');

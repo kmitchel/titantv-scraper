@@ -71,6 +71,16 @@ const cleanupOldProgramsFn = db.prepare('DELETE FROM programs WHERE end_time < ?
 const getMetadataFn = db.prepare('SELECT value FROM metadata WHERE key = ?');
 const setMetadataFn = db.prepare('INSERT INTO metadata (key, value) VALUES (@key, @value) ON CONFLICT(key) DO UPDATE SET value=excluded.value');
 
+const clearProgramsFn = db.prepare('DELETE FROM programs');
+const clearChannelsFn = db.prepare('DELETE FROM channels');
+const clearCursorFn = db.prepare("DELETE FROM metadata WHERE key = 'last_scrape_cursor'");
+
+const clearAllDataFn = db.transaction(() => {
+  clearProgramsFn.run();
+  clearChannelsFn.run();
+  clearCursorFn.run();
+});
+
 module.exports = {
   db,
   saveChannel: (data) => insertChannelFn.get(data),
@@ -80,5 +90,6 @@ module.exports = {
   getProgram: (channelId, startTime) => getProgramFn.get(channelId, startTime),
   cleanupOldPrograms: (timestamp) => cleanupOldProgramsFn.run(timestamp),
   getMetadata: (key) => getMetadataFn.get(key),
-  setMetadata: (key, value) => setMetadataFn.run({ key, value })
+  setMetadata: (key, value) => setMetadataFn.run({ key, value }),
+  clearAllData: () => clearAllDataFn()
 };
