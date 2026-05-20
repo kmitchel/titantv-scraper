@@ -14,9 +14,10 @@ function generateXMLTV() {
         }
     }
 
-    // Get programs for next 24 hours (or whatever is in DB)
-    const start = dayjs().subtract(2, 'hours').unix(); // Buffer
-    const end = dayjs().add(7, 'day').unix();
+    // Query the same window configured for scraping (default 1 day)
+    const guideDays = Math.max(1, parseInt(process.env.GUIDE_DAYS) || 1);
+    const start = dayjs().subtract(2, 'hours').unix(); // small buffer for in-progress programs
+    const end = dayjs().add(guideDays, 'day').unix();
 
     for (const channel of channels) {
         const programs = getProgramsForChannel(channel.id, start, end);

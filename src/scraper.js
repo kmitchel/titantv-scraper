@@ -22,7 +22,8 @@ async function startScrape(fullDay = false, zipCode = null) {
     console.log(`Starting scrape (API Mode). Mode: Continuous 24h Blocks, Zip: ${zipCode || 'Default'}`);
     const browser = await puppeteer.launch({
         headless: true,
-        defaultViewport: { width: 1400, height: 900 }
+        defaultViewport: { width: 1400, height: 900 },
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
 
@@ -159,9 +160,11 @@ async function startScrape(fullDay = false, zipCode = null) {
             }
         } catch (e) { console.log('Metadata read error:', e); }
 
-        // Always scrape 24 hours (4 blocks of 6 hours)
-        const iterations = 4;
+        // Scrape GUIDE_DAYS days worth of data (default 1), in 6-hour blocks
+        const guideDays = Math.max(1, parseInt(process.env.GUIDE_DAYS) || 1);
         const durationMins = 360; // 6 hours per block
+        const iterations = guideDays * 4;
+        console.log(`Fetching ${guideDays} day(s) of guide data (${iterations} blocks of 6 hours).`);
 
         for (let i = 0; i < iterations; i++) {
             const dateStr = currentStart.format('YYYYMMDDHHmm');
