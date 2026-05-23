@@ -13,7 +13,7 @@
   "type": "commonjs",
   "dependencies": {
     "better-sqlite3": "^12.5.0",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "dotenv": "^17.2.3",
     "puppeteer": "^24.34.0",
     "xmlbuilder2": "^4.0.3"

@@ -25,6 +25,7 @@ EXPOSE 8000
 
 # Tell Puppeteer to use the pre-installed Chromium from the base image
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
+    TZ=America/Chicago
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

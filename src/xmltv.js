@@ -1,6 +1,11 @@
 const { create } = require('xmlbuilder2');
 const { getChannels, getProgramsForChannel } = require('./db');
 const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 function generateXMLTV() {
     const root = create({ version: '1.0' }).ele('tv');
@@ -22,9 +27,10 @@ function generateXMLTV() {
     for (const channel of channels) {
         const programs = getProgramsForChannel(channel.id, start, end);
         for (const prog of programs) {
+            const tz = process.env.TZ || 'America/Chicago';
             const progEle = root.ele('programme', {
-                start: dayjs.unix(prog.start_time).format('YYYYMMDDHHmmss ZZ'),
-                stop: dayjs.unix(prog.end_time).format('YYYYMMDDHHmmss ZZ'),
+                start: dayjs.unix(prog.start_time).tz(tz).format('YYYYMMDDHHmmss ZZ'),
+                stop: dayjs.unix(prog.end_time).tz(tz).format('YYYYMMDDHHmmss ZZ'),
                 channel: channel.channel_number
             });
             progEle.ele('title').txt(prog.title);

@@ -2,6 +2,11 @@ require('dotenv').config();
 const puppeteer = require('puppeteer');
 const { saveChannel, saveProgram, getProgram, getMetadata, setMetadata } = require('./db');
 const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const SELECTORS = {
     AD_BLOCK_CLOSE: 'span.zw3zih',
@@ -162,12 +167,15 @@ async function startScrape(fullDay = false, zipCode = null) {
 
         // Scrape GUIDE_DAYS days worth of data (default 1), in 6-hour blocks
         const guideDays = Math.max(1, parseInt(process.env.GUIDE_DAYS) || 1);
+        const tz = process.env.TZ || 'America/Chicago';
         const durationMins = 360; // 6 hours per block
         const iterations = guideDays * 4;
-        console.log(`Fetching ${guideDays} day(s) of guide data (${iterations} blocks of 6 hours).`);
+        console.log(`Fetching ${guideDays} day(s) of guide data (${iterations} blocks of 6 hours) in timezone ${tz}.`);
 
         for (let i = 0; i < iterations; i++) {
-            const dateStr = currentStart.format('YYYYMMDDHHmm');
+            // Format the date string in the configured timezone so TitanTV returns
+            // the correct local-time blocks rather than UTC-offset blocks
+            const dateStr = currentStart.tz(tz).format('YYYYMMDDHHmm');
             console.log(`Fetching schedule block ${i + 1}/${iterations}: ${dateStr}`);
 
             const url = `https://titantv.com/api/schedule/${capturedScheduleBaseInfo.userId}/${capturedScheduleBaseInfo.lineupId}/${dateStr}/${durationMins}`;
@@ -188,10 +196,11 @@ async function startScrape(fullDay = false, zipCode = null) {
                         for (const day of chEntry.days) {
                             if (day.events) {
                                 for (const evt of day.events) {
-                                    // Parse start/end
-                                    // evt.startTime is likely ISO: "2026-01-03T19:00:00"
-                                    const startUnix = dayjs(evt.startTime).unix();
-                                    const endUnix = dayjs(evt.endTime).unix();
+                                    // evt.startTime is a naive local time string e.g. "2026-01-03T19:00:00"
+                                    // with no timezone indicator. Parse it in the configured TZ so it
+                                    // reflects the correct local time rather than being treated as UTC.
+                                    const startUnix = dayjs.tz(evt.startTime, tz).unix();
+                                    const endUnix = dayjs.tz(evt.endTime, tz).unix();
 
                                     saveProgram({
                                         channel_id: dbChId,
