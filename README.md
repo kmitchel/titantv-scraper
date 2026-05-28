@@ -1,5 +1,9 @@
 # TitanTV Scraper
 
+> [!IMPORTANT]
+> This project has been superseded by [titantv-grabber](https://github.com/kmitchel/titantv-grabber), a Python implementation that removes the Puppeteer/headless Chromium dependency. Use `titantv-grabber` for new installs and ongoing maintenance; this Node.js scraper is kept only for historical reference.
+
+
 A Node.js tool to scrape TV listings from TitanTV and generate an XMLTV file.
 
 ## Features
