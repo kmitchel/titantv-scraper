@@ -6,13 +6,13 @@ SCRAPE_INTERVAL=${SCRAPE_INTERVAL_HOURS:-6}
 echo "=== TitanTV Scraper Container ==="
 echo "Scrape interval: every ${SCRAPE_INTERVAL} hours"
 
-# Run the initial scrape before starting the server
-echo "Running initial scrape..."
-node src/index.js
-
-# Start the HTTP server in the background
+# Start the HTTP server first so it can return 503 until guide data exists
 echo "Starting HTTP server..."
 node src/server.js &
+
+# Run the initial scrape after the server is accepting requests
+echo "Running initial scrape..."
+node src/index.js
 
 # Re-run the scraper on the configured interval
 INTERVAL_SECS=$((SCRAPE_INTERVAL * 3600))
