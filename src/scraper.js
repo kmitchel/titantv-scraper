@@ -232,6 +232,7 @@ async function startScrape(fullDay = false, zipCode = null) {
 
     } catch (e) {
         console.error('Fatal scrape error:', e);
+        throw e;
     } finally {
         await browser.close();
     }

@@ -10,6 +10,8 @@ async function main() {
     const args = process.argv.slice(2);
     const cliZipCode = args[0];
     let effectiveZipCode = cliZipCode;
+    const envZipCode = process.env.ZIP_CODE;
+    const defaultZipCode = '46725';
 
     console.log("TitanTV Scraper CLI");
 
@@ -21,50 +23,47 @@ async function main() {
             console.error("Failed to update metadata:", e);
         }
     } else {
-        // Try to load from DB first, then fall back to .env
+        // Prefer runtime env config over the persisted value so Docker env changes
+        // take effect even when /app/data is reused across container restarts.
         try {
             const savedZip = getMetadata('last_zip_code');
             const previousZip = savedZip && savedZip.value;
-            const envZip = process.env.ZIP_CODE;
 
-            if (previousZip) {
+            if (envZipCode) {
+                console.log(`No argument provided. Using ZIP_CODE from environment: ${envZipCode}`);
+                effectiveZipCode = envZipCode;
+                if (previousZip !== envZipCode) {
+                    setMetadata('last_zip_code', envZipCode);
+                }
+            } else if (previousZip) {
                 console.log(`No argument provided. Using saved zip code: ${previousZip}`);
                 effectiveZipCode = previousZip;
-            } else if (envZip) {
-                console.log(`No argument or saved zip code. Using ZIP_CODE from .env: ${envZip}`);
-                effectiveZipCode = envZip;
-                setMetadata('last_zip_code', envZip);
             } else {
                 console.log("No argument, saved zip code, or .env ZIP_CODE found. Using hardcoded default.");
+                effectiveZipCode = defaultZipCode;
             }
         } catch (e) {
             console.log("Could not read saved zip code.", e);
-            if (process.env.ZIP_CODE) {
-                effectiveZipCode = process.env.ZIP_CODE;
-            }
+            effectiveZipCode = envZipCode || defaultZipCode;
         }
     }
 
     try {
         const outputPath = path.resolve(__dirname, '../xmltv.xml');
+        const tmpOutputPath = `${outputPath}.tmp`;
 
         // Always clear stale channel and program data before scraping.
         // The scraper fetches a full fresh window every run, so old data is never needed.
         console.log("Clearing previous channel and program data...");
         clearAllData();
 
-        // Also clear the xmltv.xml so consumers don't read stale data during the scrape
-        if (fs.existsSync(outputPath)) {
-            fs.unlinkSync(outputPath);
-            console.log('Cleared stale xmltv.xml.');
-        }
-
         await startScrape(true, effectiveZipCode);
 
         console.log("Generating XMLTV...");
         const xml = generateXMLTV();
 
-        fs.writeFileSync(outputPath, xml);
+        fs.writeFileSync(tmpOutputPath, xml);
+        fs.renameSync(tmpOutputPath, outputPath);
 
         console.log(`Success! XMLTV file written to: ${outputPath}`);
         process.exit(0);
